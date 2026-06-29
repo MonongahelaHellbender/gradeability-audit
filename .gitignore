@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+# downloaded benchmark data — keep only the bundled fixture
+data/*.jsonl
+!data/fixture.jsonl

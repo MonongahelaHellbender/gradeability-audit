@@ -1,0 +1,12 @@
+{"id": "c1", "question": "Maria has 12 apples. She buys 6 more. How many apples does she have now?", "reference_answer": "18", "gold_label": "clean"}
+{"id": "c2", "question": "A box holds 9 pencils. Tom has 8 full boxes. How many pencils does he have?", "reference_answer": "72", "gold_label": "clean"}
+{"id": "c3", "question": "A shirt costs $15. How much do 3 shirts cost?", "reference_answer": "$45", "gold_label": "clean"}
+{"id": "c4", "question": "A factory makes 400 bolts per hour. How many bolts in 3 hours?", "reference_answer": "1,200", "gold_label": "clean"}
+{"id": "c5", "question": "Half of a 1-liter bottle is poured out. How many liters remain?", "reference_answer": "0.5", "gold_label": "clean"}
+{"id": "c6", "question": "A class has 30 students. 40% are boys. How many boys are there?", "reference_answer": "12", "gold_label": "clean"}
+{"id": "c7", "question": "Sam runs 5 km each day for a week. How many km total?", "reference_answer": "35", "gold_label": "clean"}
+{"id": "c8", "question": "A tank holds 240 liters. It is drained at 60 liters per hour. How many hours to empty?", "reference_answer": "4", "gold_label": "clean"}
+{"id": "p1", "question": "A number plus 3 equals either 15 or 18 depending on the rounding. What is the number?", "reference_answer": "12 or 15", "gold_label": "problematic"}
+{"id": "p2", "question": "Jenny has some marbles and gives away 5. How many does she have left?", "reference_answer": "20", "gold_label": "problematic"}
+{"id": "p3", "question": "Ben is 10 years old. Ben is also 8 years old. How old is Ben?", "reference_answer": "8", "gold_label": "problematic"}
+{"id": "p4", "question": "A jar has lots of candies. Roughly how many candies are in the jar?", "reference_answer": "many", "gold_label": "problematic"}
