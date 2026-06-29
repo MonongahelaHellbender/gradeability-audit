@@ -118,6 +118,58 @@ tool.
 
 ## Next experiment
 
-A benchmark with a **genuine intra-benchmark mix** (e.g. DROP: numeric answers vs
-free-text spans) — to show the denominator splitting *within* one benchmark, not
-just across two. The fetch already supports it (`fetch_platinum.py drop`).
+→ done: DROP, Finding 03.
+
+---
+
+# Finding 03 — the denominator is a comparable cross-benchmark statistic (+ intra-benchmark split)
+
+*2026-06-29. Reproduce: `python scripts/fetch_platinum.py drop && python scripts/report.py`.*
+
+DROP grades by exact-match/F1 like HotpotQA, but its answers are a real **mix** of
+numbers and free-text spans — so it tests whether the denominator splits *within*
+one benchmark, not just across two.
+
+## The spectrum (the deliverable)
+
+| Benchmark | Grader | **Trust denominator** | Verdict split |
+|---|---|---|---|
+| GSM8K | numeric equality | **100.0%** | exact 1319 / judge 0 |
+| DROP | exact-match / F1 | **72.4%** | exact 181 / judge 69 |
+| HotpotQA | exact-match / F1 | **11.6%** | exact 29 / judge 221 |
+
+DROP splits **within one benchmark**: 181 numeric answers are exact-checkable, 69
+span / single-token answers are judge-dependent. The denominator lands between the
+all-numeric (GSM8K) and all-free-text (HotpotQA) ends because DROP's answer *mix*
+is between them. That is the whole claim: **one comparable number, computed the
+same way for any benchmark, that says what fraction of its score rests on a sound
+grader.**
+
+## Forecast vs result (forecast-first)
+
+Predicted 40–65% exact-checkable; actual **72.4%** — above my ceiling (DROP's
+curated subset is 72% numeric, more than I assumed). Combined with Finding 02
+(predicted 15–40%, got 11.6%, below floor), I have now missed the *magnitude* in
+both directions while getting the *direction* right both times. Honest takeaway:
+my qualitative ordering forecasts hold; my point-range estimates of answer-type
+mix are not reliable — I should stop quoting tight ranges I can't ground.
+
+## Caveats
+
+- Same as Findings 01–02: PlatinumBench **curated** subsets (model-disagreement-
+  enriched), scoped to the benchmark's actual grader.
+- DROP **date** answers are a known soft spot of the simple rule: a bare-year date
+  (`1944`) reads as a number → exact-checkable, while `March 1944` reads as
+  multi-token → judge-dependent. Defensible (raw EM *is* brittle on the latter),
+  but it means "exact-checkable" for DROP partly tracks date *formatting*. Noted,
+  not hidden.
+- Gold key-defect rate climbs across the three (GSM8K 11% → HotpotQA 63% → DROP
+  88%), orthogonal to the denominator and **prior art** (known label noise in
+  HotpotQA/DROP), not a finding here.
+
+## Where this stops (ship discipline)
+
+Three benchmarks is enough to make the deliverable: a comparable trust-denominator
+**spectrum** + the two orthogonality lessons (exact ⟂ ill-posed, judge ⟂ ill-posed).
+A fourth benchmark is procrastination from writing it up. **Next is the short
+artifact, not another fetch.**

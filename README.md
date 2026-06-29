@@ -92,12 +92,20 @@ data across two benchmarks. See [`FINDINGS.md`](FINDINGS.md):
   of PlatinumBench's subset is semantically defective and deterministic rules
   recover 0/33 — exact-checkability ⟂ well-posedness. One rule retracted after
   failing on real data.
-- **Finding 02 (HotpotQA):** the denominator **discriminates** — GSM8K 100% vs
-  HotpotQA **11.6%** exact-checkable (221/250 judge-dependent, because exact-match
-  over free text isn't paraphrase/alias-invariant). The number is about the
-  *grader*, not the questions.
+- **Finding 02 (HotpotQA):** the denominator **discriminates** — exact-match over
+  free text isn't paraphrase/alias-invariant, so most items are judge-dependent.
+- **Finding 03 (spectrum):** one comparable number across benchmarks —
+  **GSM8K 100% → DROP 72.4% → HotpotQA 11.6%** exact-checkable. DROP splits
+  *within* one benchmark (181 numeric exact-checkable / 69 span judge-dependent).
+  The number is about the *grader*, not the questions.
 
-Reproduce: `python scripts/fetch_platinum.py gsm8k && python scripts/fetch_platinum.py hotpotqa && python scripts/report.py`.
+```
+TRUST DENOMINATOR — spectrum
+  GSM8K     100.0%  ########################################  (numeric equality)
+  DROP       72.4%  #############################             (exact-match / F1)
+  HotpotQA   11.6%  #####                                     (exact-match / F1)
+```
 
-Next: a benchmark with an intra-benchmark answer-type mix (DROP) to show the
-denominator splitting *within* one benchmark.
+Reproduce: `python scripts/fetch_platinum.py gsm8k && python scripts/fetch_platinum.py hotpotqa && python scripts/fetch_platinum.py drop && python scripts/report.py`.
+
+Next: **write up the spectrum** (it's the deliverable) — not another benchmark.

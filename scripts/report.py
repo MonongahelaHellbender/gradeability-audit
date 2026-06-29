@@ -5,10 +5,12 @@ Run after the fetch scripts. Reads:
   data/gsm8k_test.jsonl        (full GSM8K test split, 1319) -> numeric profile
   data/gsm8k_platinum.jsonl    (300, gold-labeled)           -> validation
   data/hotpotqa_platinum.jsonl (250, gold-labeled)           -> exact-match profile
+  data/drop_platinum.jsonl     (250, gold-labeled)           -> exact-match profile (mixed)
 
-GSM8K is graded by numeric equality (sound); HotpotQA by exact-match/F1 over
-free text (sound only for numbers + yes/no). The trust denominator should drop
-hard between them -- that is the whole point: it discriminates.
+GSM8K is graded by numeric equality (sound for every item). HotpotQA/DROP are
+graded by exact-match/F1 (sound only for numbers + yes/no). The trust denominator
+should fall as the share of free-text answers rises -- and DROP, with a real mix
+of numeric and span answers, should split *within* one benchmark.
 """
 from __future__ import annotations
 
@@ -17,58 +19,69 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from gradeable.audit import audit                                  # noqa: E402
-from gradeable.item import load_gsm8k, load_jsonl                  # noqa: E402
-from gradeable.rules import EXACT_MATCH_PROFILE, NUMERIC_PROFILE   # noqa: E402
-from gradeable.validate import validate                           # noqa: E402
-from gradeable.verdict import Verdict                             # noqa: E402
+from gradeable.audit import AuditReport, audit                    # noqa: E402
+from gradeable.item import load_gsm8k, load_jsonl                 # noqa: E402
+from gradeable.rules import EXACT_MATCH_PROFILE, NUMERIC_PROFILE  # noqa: E402
+from gradeable.validate import validate                          # noqa: E402
+from gradeable.verdict import Verdict                            # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
+
+EXACT_MATCH_BENCHMARKS = [("HotpotQA", "hotpotqa_platinum.jsonl"), ("DROP", "drop_platinum.jsonl")]
 
 
 def section(title: str) -> None:
     print("\n" + "=" * 66 + f"\n{title}\n" + "=" * 66)
 
 
-def gold_problematic_rate(items) -> float:
+def gold_defect_rate(items) -> float:
     n = sum(1 for it in items if it.gold_label == "problematic")
     return n / len(items) if items else 0.0
 
 
+def split(rep: AuditReport) -> str:
+    return (f"exact={rep.counts[Verdict.EXACT_CHECKABLE]} "
+            f"judge={rep.counts[Verdict.JUDGE_DEPENDENT]} "
+            f"ill-posed={rep.counts[Verdict.ILL_POSED]}")
+
+
 def main() -> None:
+    spectrum = []  # (name, grader, denominator)
+
     # ---- GSM8K: numeric grader (sound) ----
     section("GSM8K (full test split) — numeric grader")
     gsm = load_gsm8k(DATA / "gsm8k_test.jsonl")
     gsm_rep = audit(gsm, NUMERIC_PROFILE)
     print(gsm_rep.summary())
+    spectrum.append(("GSM8K", "numeric equality", gsm_rep.soundly_gradeable_fraction))
 
-    section("GSM8K-Platinum (300, gold labels) — validation of the ill-posed axis")
+    section("GSM8K-Platinum (300) — validation of the ill-posed axis")
     gsm_plat = load_jsonl(DATA / "gsm8k_platinum.jsonl")
-    print(f"gold key-defect rate: {gold_problematic_rate(gsm_plat):.1%} (rejected+revised)")
+    print(f"gold key-defect rate: {gold_defect_rate(gsm_plat):.1%} (rejected+revised)")
     print(validate(gsm_plat, NUMERIC_PROFILE).summary())
 
-    # ---- HotpotQA: exact-match grader (unsound for free text) ----
-    section("HotpotQA-Platinum (250) — exact-match grader")
-    hpqa = load_jsonl(DATA / "hotpotqa_platinum.jsonl")
-    hpqa_rep = audit(hpqa, EXACT_MATCH_PROFILE)
-    print(hpqa_rep.summary())
-    print("\nNOTE: the JUDGE_DEPENDENT count is NOT validated against the gold "
-          "labels.\ncleaning_status golds WELL-POSEDNESS (the ill-posed axis); "
-          "exact-checkability is\na different, orthogonal axis -- a HotpotQA item "
-          "can be perfectly well-posed\nAND judge-dependent. Validating one against "
-          "the other would be a category error.")
-    print(f"\nfor context, gold key-defect rate here: {gold_problematic_rate(hpqa):.1%} "
-          "(rejected+revised) — orthogonal to the denominator above")
+    # ---- exact-match benchmarks ----
+    for name, fname in EXACT_MATCH_BENCHMARKS:
+        items = load_jsonl(DATA / fname)
+        rep = audit(items, EXACT_MATCH_PROFILE)
+        spectrum.append((name, "exact-match / F1", rep.soundly_gradeable_fraction))
+        section(f"{name}-Platinum ({len(items)}) — exact-match grader")
+        print(rep.summary())
+        print(f"  verdict split: {split(rep)}")
+        print(f"  gold key-defect rate (orthogonal axis): {gold_defect_rate(items):.1%}")
 
-    # ---- the headline: the denominator discriminates ----
-    section("TRUST DENOMINATOR — cross-benchmark")
-    print(f"  GSM8K     (numeric eq grader) : {gsm_rep.soundly_gradeable_fraction:6.1%} exact-checkable")
-    print(f"  HotpotQA  (exact-match grader): {hpqa_rep.soundly_gradeable_fraction:6.1%} exact-checkable")
-    print(f"\n  HotpotQA verdict split: "
-          f"exact={hpqa_rep.counts[Verdict.EXACT_CHECKABLE]} "
-          f"judge={hpqa_rep.counts[Verdict.JUDGE_DEPENDENT]} "
-          f"ill-posed={hpqa_rep.counts[Verdict.ILL_POSED]}")
+    print("\n  (JUDGE_DEPENDENT is NOT scored against the gold labels: cleaning_status "
+          "golds\n   well-posedness, which is orthogonal to exact-checkability. "
+          "Scoring one against\n   the other is a category error.)")
+
+    # ---- headline: the denominator is a comparable cross-benchmark statistic ----
+    section("TRUST DENOMINATOR — spectrum (the deliverable)")
+    for name, grader, frac in sorted(spectrum, key=lambda x: -x[2]):
+        bar = "#" * round(frac * 40)
+        print(f"  {name:9} {frac:6.1%}  {bar:<40}  ({grader})")
+    print("\n  100% = every item soundly gradeable by the benchmark's own grader.")
+    print("  Lower = more of the score rests on an unsound grader (a judge / EM over free text).")
 
 
 if __name__ == "__main__":
