@@ -86,7 +86,8 @@ No dependencies beyond the Python standard library (3.10+).
 ## Status
 
 v0.2 — sound core + validation harness + per-grader rule profiles, run on real
-data across two benchmarks. See [`FINDINGS.md`](FINDINGS.md):
+data across three benchmarks. **Write-up: [`WRITEUP.md`](WRITEUP.md)** (the
+deliverable); raw findings log in [`FINDINGS.md`](FINDINGS.md):
 
 - **Finding 01 (GSM8K):** trust denominator 100% (fully exact-checkable) yet 11%
   of PlatinumBench's subset is semantically defective and deterministic rules
