@@ -4,7 +4,20 @@
 fully offline and backs the tests and `python -m gradeable --demo`. It is
 synthetic — do not cite its numbers as a real benchmark audit.
 
-## Fetching real benchmarks (for the v0.1 result)
+## Reproduce the v0.1 result
+
+```
+curl -sSL -o data/gsm8k_test.jsonl \
+  https://raw.githubusercontent.com/openai/grade-school-math/master/grade_school_math/data/test.jsonl
+python scripts/fetch_gsm8k_platinum.py   # -> data/gsm8k_platinum.jsonl (HF datasets-server, no auth)
+python scripts/report.py                 # trust denominator + validation
+```
+
+Both `.jsonl` files are gitignored (only `fixture.jsonl` is tracked). Confirmed
+working 2026-06-28: GSM8K = 1,319 items; Platinum gsm8k config = 300 items
+(consensus 221 / verified 46 / rejected 32 / revised 1).
+
+## Notes on the sources
 
 Everything below is downloaded locally and read by the loaders in
 `gradeable/item.py`. No network at runtime.

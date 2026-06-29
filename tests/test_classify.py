@@ -29,16 +29,18 @@ class TestExampleRule(unittest.TestCase):
         self.assertIsNone(answer_not_clean_number(item("reasoning...\n#### 42")))
 
 
-class TestUnderspecified(unittest.TestCase):
-    def test_flags_has_some(self):
-        res = underspecified_non_derivable(item("42", "Jenny has some marbles and gives away 5. How many left?"))
-        self.assertIsNotNone(res)
-        self.assertEqual(res.verdict, Verdict.ILL_POSED)
-
-    def test_abstains_when_base_is_bound(self):
-        # "some of the 20" — the base quantity IS given; must not flag.
+class TestUnderspecifiedRetracted(unittest.TestCase):
+    # Disabled after 3/3 false positives on the real GSM8K test split (see the
+    # docstring in rules.py). These pins stop anyone silently re-enabling the
+    # unsound "has some" heuristic: the exact shapes that broke it must stay
+    # unflagged.
+    def test_real_false_positive_shapes_not_flagged(self):
         self.assertIsNone(underspecified_non_derivable(
-            item("15", "Some of the 20 marbles are red. Jenny gives away 5. How many left?")))
+            item("120", "She already has some savings. How much money does she have in her purse?")))
+        self.assertIsNone(underspecified_non_derivable(
+            item("110", "Gretchen has some coins. There are 30 more gold than silver. How many in total?")))
+        self.assertIsNone(underspecified_non_derivable(
+            item("42", "Jenny has some marbles and gives away 5. How many left?")))
 
 
 class TestInternalContradiction(unittest.TestCase):

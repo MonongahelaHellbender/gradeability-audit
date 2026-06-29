@@ -44,10 +44,6 @@ _CLEAN_NUMBER = re.compile(
     r"|^[-+]?\$?\d+(?:\.\d+)?%?$"                 # plain integer / decimal
 )
 
-# Indefinite *starting* quantity: "<subject> has some <noun>" — the queried
-# amount can't be derived. Narrow on purpose (abstains on "some of the 20 ...").
-_HAS_SOME = re.compile(r"\b(?:has|have|had)\s+some\s+\w+", re.IGNORECASE)
-
 # Age-contradiction detection (narrow): "<subject> is [also] <n> years old".
 _AGE = re.compile(
     r"\b(\w+)\s+is\s+(?:also\s+|now\s+|actually\s+)?(\d+)\s+years\s+old",
@@ -119,25 +115,25 @@ def multiple_candidate_answers(item: BenchmarkItem) -> Optional[RuleResult]:
 
 
 def underspecified_non_derivable(item: BenchmarkItem) -> Optional[RuleResult]:
-    """ILL_POSED when the subject is given an indefinite *starting* quantity
-    ("X has some marbles"), so the requested amount cannot be derived.
+    """RETRACTED 2026-06-28 — disabled after failing on real data.
 
-    Why it matters: if the answer can't be computed from the problem, the only
-    way to "get it right" is to have memorized the key — the cleanest possible
-    contamination magnet, and unsound to grade.
+    The first cut flagged "<subject> has/have/had some <noun>" as an indefinite,
+    non-derivable starting quantity. On the synthetic fixture it looked perfect
+    (precision 1.0). On the real GSM8K test split it fired on 3 items and ALL 3
+    were FALSE POSITIVES:
+      * 837 "She already has some savings ... how much money does she have?"
+        -- the "some" IS the unknown you solve for (well-posed; answer 120).
+      * 856 "expects to have some extra glue sticks left over" -- flavor text.
+      * 863 "Gretchen has some coins ... how many in total?" -- solved from the
+        stated constraints (answer 110).
+    "has some X" is the *normal* shape of a solve-for-the-unknown GSM8K problem,
+    not a defect, so the cue carries no sound signal. Shipping it would mean 0%
+    real precision; precision-first says disable, not relax.
 
-    Narrow by design: matches only an explicit "has/have/had some <noun>"
-    possession — a strong, low-false-positive signal. It deliberately abstains
-    on "some of the 20 ..." (the base IS bound) and on everything else. High
-    precision, low recall; grow recall by adding constructions and validating on
-    real data, never by relaxing this one until precision is measured.
+    A sound version must verify the queried quantity is genuinely unconstrained
+    -- which is most of the work of solving the problem. Left as an honest open
+    problem; the dead heuristic is kept here as a documented warning.
     """
-    if _HAS_SOME.search(item.question):
-        return RuleResult(
-            verdict=Verdict.ILL_POSED,
-            reason="subject has an indefinite starting quantity ('has some ...'); requested amount is not derivable",
-            rule="underspecified_non_derivable",
-        )
     return None
 
 

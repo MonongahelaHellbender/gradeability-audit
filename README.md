@@ -65,10 +65,13 @@ They are meant to be **named, cited, and forkable**: disagree with a flag? chang
 a rule and re-run. Bias is toward **not** flagging — precision must stay high;
 recall is the number you grow.
 
-Three rules are implemented — `answer_not_clean_number`,
-`underspecified_non_derivable`, `internal_contradiction` — all deliberately
-narrow and high-precision. Two remain as stubs with design notes
-(`multiple_candidate_answers`, `unit_or_rounding_ambiguity`). Fork any of them.
+Two **sound** rules are live — `answer_not_clean_number` and
+`internal_contradiction` — both narrow, high-precision, zero false positives on
+1,619 real items. A third, `underspecified_non_derivable`, was **retracted**
+after scoring 0% precision on real GSM8K (kept in the file as a documented
+warning). Two remain as stubs (`multiple_candidate_answers`,
+`unit_or_rounding_ambiguity`). The retraction is the point: a rule that fails on
+real data gets disabled, not relaxed.
 
 ## Run
 
@@ -82,8 +85,12 @@ No dependencies beyond the Python standard library (3.10+).
 
 ## Status
 
-v0.1 — sound core + offline fixture + validation harness + 3 starter rules
-(precision 1.0 / recall 1.0 on the 14-item synthetic fixture, which is a
-sanity check, NOT a benchmark result). Next: wire in real GSM8K + GSM8K-Platinum
-(see `data/README.md`) and report the real trust denominator + validation —
-that number is the deliverable, the fixture number is not.
+v0.1 — sound core + validation harness, **run on real data**. First finding in
+[`FINDINGS.md`](FINDINGS.md): on GSM8K the trust denominator is 100% (fully
+exact-checkable) yet 11% of PlatinumBench's reviewed subset is semantically
+defective, and deterministic rules recover 0/33 of those — exact-checkability
+and well-posedness are nearly orthogonal. One rule retracted after failing on
+real data. Reproduce: `python scripts/fetch_gsm8k_platinum.py && python scripts/report.py`.
+
+Next: run the same audit on a **partly judge-dependent** benchmark, where the
+trust denominator should drop below 100% and become discriminating.

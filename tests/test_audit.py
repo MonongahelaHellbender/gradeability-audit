@@ -15,16 +15,18 @@ class TestAuditOnFixture(unittest.TestCase):
         self.assertEqual(self.report.n_total, 14)  # 10 clean + 4 problematic
 
     def test_trust_denominator(self):
-        # With the three implemented rules, all 4 problematic items are flagged
-        # ill-posed and the 10 clean items remain exact-checkable.
-        self.assertEqual(self.report.counts[Verdict.EXACT_CHECKABLE], 10)
+        # Two SOUND rules are live (answer_not_clean_number, internal_contradiction).
+        # underspecified_non_derivable was retracted (unsound on real data), so p2
+        # ("Jenny has some marbles ...") is an HONEST miss and stays exact-checkable.
+        self.assertEqual(self.report.counts[Verdict.EXACT_CHECKABLE], 11)
         self.assertEqual(self.report.counts[Verdict.JUDGE_DEPENDENT], 0)
-        self.assertEqual(self.report.counts[Verdict.ILL_POSED], 4)
-        self.assertAlmostEqual(self.report.soundly_gradeable_fraction, 10 / 14)
+        self.assertEqual(self.report.counts[Verdict.ILL_POSED], 3)
+        self.assertAlmostEqual(self.report.soundly_gradeable_fraction, 11 / 14)
 
-    def test_all_problematic_flagged(self):
+    def test_flagged_are_the_sound_catches(self):
+        # p1/p4 (non-numeric key) + p3 (age contradiction). p2 is the known miss.
         flagged_ids = {c.item.id for c in self.report.flagged}
-        self.assertEqual(flagged_ids, {"p1", "p2", "p3", "p4"})
+        self.assertEqual(flagged_ids, {"p1", "p3", "p4"})
 
     def test_near_misses_not_flagged(self):
         # Precision guard: c9 ("some of the 20 ...") and c10 ("two years ago ...
