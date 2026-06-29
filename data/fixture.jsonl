@@ -9,4 +9,6 @@
 {"id": "p1", "question": "A number plus 3 equals either 15 or 18 depending on the rounding. What is the number?", "reference_answer": "12 or 15", "gold_label": "problematic"}
 {"id": "p2", "question": "Jenny has some marbles and gives away 5. How many does she have left?", "reference_answer": "20", "gold_label": "problematic"}
 {"id": "p3", "question": "Ben is 10 years old. Ben is also 8 years old. How old is Ben?", "reference_answer": "8", "gold_label": "problematic"}
+{"id": "c9", "question": "Some of the 20 marbles are red. Jenny gives away 5 marbles. How many marbles are left?", "reference_answer": "15", "gold_label": "clean"}
+{"id": "c10", "question": "Ben is 10 years old. Two years ago Ben was 8 years old. How old is Ben now?", "reference_answer": "10", "gold_label": "clean"}
 {"id": "p4", "question": "A jar has lots of candies. Roughly how many candies are in the jar?", "reference_answer": "many", "gold_label": "problematic"}

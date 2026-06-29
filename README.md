@@ -65,8 +65,10 @@ They are meant to be **named, cited, and forkable**: disagree with a flag? chang
 a rule and re-run. Bias is toward **not** flagging — precision must stay high;
 recall is the number you grow.
 
-One example rule (`answer_not_clean_number`) is implemented; the rest are stubs
-with design notes for you to fill in.
+Three rules are implemented — `answer_not_clean_number`,
+`underspecified_non_derivable`, `internal_contradiction` — all deliberately
+narrow and high-precision. Two remain as stubs with design notes
+(`multiple_candidate_answers`, `unit_or_rounding_ambiguity`). Fork any of them.
 
 ## Run
 
@@ -80,6 +82,8 @@ No dependencies beyond the Python standard library (3.10+).
 
 ## Status
 
-v0.1 — sound core + offline fixture + validation harness. Next: wire in real
-GSM8K + GSM8K-Platinum (see `data/README.md`), write the stub rules, report the
-real trust denominator and validation numbers, write it up.
+v0.1 — sound core + offline fixture + validation harness + 3 starter rules
+(precision 1.0 / recall 1.0 on the 14-item synthetic fixture, which is a
+sanity check, NOT a benchmark result). Next: wire in real GSM8K + GSM8K-Platinum
+(see `data/README.md`) and report the real trust denominator + validation —
+that number is the deliverable, the fixture number is not.

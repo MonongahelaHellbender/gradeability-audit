@@ -44,6 +44,21 @@ _CLEAN_NUMBER = re.compile(
     r"|^[-+]?\$?\d+(?:\.\d+)?%?$"                 # plain integer / decimal
 )
 
+# Indefinite *starting* quantity: "<subject> has some <noun>" — the queried
+# amount can't be derived. Narrow on purpose (abstains on "some of the 20 ...").
+_HAS_SOME = re.compile(r"\b(?:has|have|had)\s+some\s+\w+", re.IGNORECASE)
+
+# Age-contradiction detection (narrow): "<subject> is [also] <n> years old".
+_AGE = re.compile(
+    r"\b(\w+)\s+is\s+(?:also\s+|now\s+|actually\s+)?(\d+)\s+years\s+old",
+    re.IGNORECASE,
+)
+# Any temporal cue means two stated ages may refer to different times -> abstain.
+_TEMPORAL = re.compile(
+    r"\b(?:ago|later|was|were|will\s+be|then|before|after|previously|since)\b",
+    re.IGNORECASE,
+)
+
 
 def _final_answer(item: BenchmarkItem) -> str:
     ans = item.reference_answer.strip()
@@ -104,26 +119,50 @@ def multiple_candidate_answers(item: BenchmarkItem) -> Optional[RuleResult]:
 
 
 def underspecified_non_derivable(item: BenchmarkItem) -> Optional[RuleResult]:
-    """ILL_POSED when the answer is not derivable from the information given
-    (a needed quantity is missing / undefined in the stem).
+    """ILL_POSED when the subject is given an indefinite *starting* quantity
+    ("X has some marbles"), so the requested amount cannot be derived.
 
     Why it matters: if the answer can't be computed from the problem, the only
     way to "get it right" is to have memorized the key — the cleanest possible
     contamination magnet, and unsound to grade.
 
-    TODO(you): implement (consider: does every number the answer depends on
-    appear in the stem? this is hard in general — start with a narrow, high-
-    precision check and abstain otherwise).
+    Narrow by design: matches only an explicit "has/have/had some <noun>"
+    possession — a strong, low-false-positive signal. It deliberately abstains
+    on "some of the 20 ..." (the base IS bound) and on everything else. High
+    precision, low recall; grow recall by adding constructions and validating on
+    real data, never by relaxing this one until precision is measured.
     """
+    if _HAS_SOME.search(item.question):
+        return RuleResult(
+            verdict=Verdict.ILL_POSED,
+            reason="subject has an indefinite starting quantity ('has some ...'); requested amount is not derivable",
+            rule="underspecified_non_derivable",
+        )
     return None
 
 
 def internal_contradiction(item: BenchmarkItem) -> Optional[RuleResult]:
-    """ILL_POSED when the stem states mutually contradictory constraints.
+    """ILL_POSED when the same subject is assigned two different ages with no
+    temporal qualifier — a direct contradiction.
 
-    TODO(you): implement (e.g. detect directly conflicting numeric assignments
-    to the same named quantity). Conservative > clever.
+    Narrow by design: only the "<subject> is <n> years old" attribute, and it
+    abstains the instant any temporal cue (ago / was / later / before ...)
+    appears, since "Ben is 10; two years ago Ben was 8" is consistent, not
+    contradictory. Extend to other attributes the same way: detect conflicting
+    assignments, abstain on anything that could be a different time or entity.
     """
+    if _TEMPORAL.search(item.question):
+        return None
+    by_subject: dict[str, set[int]] = {}
+    for subject, num in _AGE.findall(item.question):
+        by_subject.setdefault(subject.lower(), set()).add(int(num))
+    for subject, ages in by_subject.items():
+        if len(ages) > 1:
+            return RuleResult(
+                verdict=Verdict.ILL_POSED,
+                reason=f"'{subject}' is assigned conflicting ages {sorted(ages)} with no temporal qualifier",
+                rule="internal_contradiction",
+            )
     return None
 
 
