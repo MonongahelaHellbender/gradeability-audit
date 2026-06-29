@@ -1,6 +1,6 @@
 # Finding 01 — GSM8K: exact-checkability and well-posedness are nearly orthogonal
 
-*2026-06-28. Reproduce: `python scripts/fetch_gsm8k_platinum.py && python scripts/report.py`.*
+*2026-06-28. Reproduce: `python scripts/fetch_platinum.py gsm8k && python scripts/report.py`.*
 
 ## Numbers (real data, not the fixture)
 
@@ -54,9 +54,70 @@ retraction above is the discipline working as intended.
   rule could help — but the observed defect types (semantic ambiguity) strongly
   suggest surface cues won't.
 
+---
+
+# Finding 02 — the trust denominator discriminates: GSM8K 100% vs HotpotQA 11.6%
+
+*2026-06-29. Reproduce: `python scripts/fetch_platinum.py hotpotqa && python scripts/report.py`.*
+
+Finding 01 left GSM8K at a trivial 100% (its grader, numeric equality, is sound
+for every item). The open question was whether the denominator *moves* on a
+benchmark with a different grader. It does.
+
+## Numbers
+
+| Benchmark | Grader | **Trust denominator** (exact-checkable) | Gold key-defect rate |
+|---|---|---|---|
+| GSM8K (1,319) | numeric equality | **100.0%** | 11% (curated 300) |
+| HotpotQA (250) | exact-match / token-F1 | **11.6%** | 63% (curated 250) |
+
+HotpotQA's 11.6% = 16 numeric + 13 yes/no answers; the other **221/250 are
+judge-dependent**, because exact-match over free-text answers (entities, phrases,
+even single tokens like `albany` / `u2`) is not invariant to case, articles,
+morphology, or aliasing. The `JUDGE_DEPENDENT` bucket — empty for GSM8K — is now
+the majority verdict.
+
+## Forecast vs result (forecast-first, logged before the run)
+
+Predicted 15–40% exact-checkable, "carried by yes/no + numeric." Actual **11.6%**,
+just below the predicted floor: I underweighted that the 20% single-token entity
+answers are *also* EM-brittle and conservatively classify as judge-dependent.
+Direction correct, floor too high. Logged as a miss.
+
+## The honest scope line (the orthogonality, again)
+
+The `JUDGE_DEPENDENT` count is **not** validated against the gold labels, and the
+report refuses to compute a precision/recall for it. `cleaning_status` golds
+*well-posedness* (the ill-posed axis); exact-checkability is a different axis — a
+HotpotQA item can be perfectly well-posed **and** judge-dependent. Scoring one
+against the other is a category error. So the three verdict buckets measure three
+orthogonal things, and the human gold only golds one of them. (Finding 01 showed
+exact ⟂ ill-posed; this shows judge ⟂ ill-posed too.)
+
+Separately and orthogonally: HotpotQA's original answer keys are **63% defective**
+on this curated subset (mostly `revised` = the original key was wrong) — a known
+HotpotQA label-noise issue (**prior art, not a finding here**). Under its standard
+exact-match grading HotpotQA is thus doubly compromised: most items aren't soundly
+EM-gradeable *and* most keys were wrong. GSM8K is the clean contrast on both axes.
+
+## Prior-art gate
+
+EM/F1 brittleness on free-text QA is textbook (SQuAD EM-vs-F1; answer-equivalence
+work). **Not a finding.** The contribution is unchanged from v0.1: a deterministic
+per-item gradeability classifier producing a **comparable cross-benchmark trust
+denominator**, with the grader-soundness boundary made explicit. Reproduction +
+tool.
+
+## Caveats
+
+- The 250 is PlatinumBench's **curated** HotpotQA subset (model-disagreement-
+  enriched), not uniform HotpotQA; the 63% is that subset's rate.
+- The denominator is scoped to the benchmark's *actual* grader (EM/F1). A
+  benchmark that shipped an alias set or a judge would score differently — which
+  is exactly the point: the number is about the grader, not the questions.
+
 ## Next experiment
 
-Run the same audit on a benchmark whose items are **partly judge-dependent**
-(free-text / LLM-graded). There the trust denominator should drop well below
-100% — that is where a structural auditor earns its keep, and where this GSM8K
-result serves as the all-sound calibration point.
+A benchmark with a **genuine intra-benchmark mix** (e.g. DROP: numeric answers vs
+free-text spans) — to show the denominator splitting *within* one benchmark, not
+just across two. The fetch already supports it (`fetch_platinum.py drop`).

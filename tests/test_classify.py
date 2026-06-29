@@ -3,7 +3,9 @@ import unittest
 from gradeable.item import BenchmarkItem
 from gradeable.classify import classify
 from gradeable.rules import (
+    EXACT_MATCH_PROFILE,
     answer_not_clean_number,
+    free_text_answer_needs_judge,
     internal_contradiction,
     underspecified_non_derivable,
 )
@@ -53,6 +55,25 @@ class TestInternalContradiction(unittest.TestCase):
         # Two ages but temporally qualified -> consistent, must not flag.
         self.assertIsNone(internal_contradiction(
             item("10", "Ben is 10 years old. Two years ago Ben was 8 years old. How old is Ben now?")))
+
+
+class TestExactMatchProfile(unittest.TestCase):
+    # The free-text/EM-grader profile: only numbers + closed labels are soundly
+    # exact-matchable; everything else (incl. single-token entities) is judge-dependent.
+    def test_number_and_closed_labels_exact_checkable(self):
+        for ans in ["42", "1,200", "yes", "No", "TRUE", "false"]:
+            self.assertIsNone(free_text_answer_needs_judge(item(ans)), ans)
+
+    def test_free_text_needs_judge(self):
+        for ans in ["kevin spacey", "gatwick airport", "albany", "u2", "the changing scottish landscape"]:
+            res = free_text_answer_needs_judge(item(ans))
+            self.assertIsNotNone(res, ans)
+            self.assertEqual(res.verdict, Verdict.JUDGE_DEPENDENT)
+
+    def test_profile_routes_verdicts(self):
+        self.assertEqual(classify(item("yes"), EXACT_MATCH_PROFILE).verdict, Verdict.EXACT_CHECKABLE)
+        self.assertEqual(classify(item("42"), EXACT_MATCH_PROFILE).verdict, Verdict.EXACT_CHECKABLE)
+        self.assertEqual(classify(item("kevin spacey"), EXACT_MATCH_PROFILE).verdict, Verdict.JUDGE_DEPENDENT)
 
 
 class TestClassifyDefault(unittest.TestCase):

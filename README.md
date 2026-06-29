@@ -85,12 +85,19 @@ No dependencies beyond the Python standard library (3.10+).
 
 ## Status
 
-v0.1 — sound core + validation harness, **run on real data**. First finding in
-[`FINDINGS.md`](FINDINGS.md): on GSM8K the trust denominator is 100% (fully
-exact-checkable) yet 11% of PlatinumBench's reviewed subset is semantically
-defective, and deterministic rules recover 0/33 of those — exact-checkability
-and well-posedness are nearly orthogonal. One rule retracted after failing on
-real data. Reproduce: `python scripts/fetch_gsm8k_platinum.py && python scripts/report.py`.
+v0.2 — sound core + validation harness + per-grader rule profiles, run on real
+data across two benchmarks. See [`FINDINGS.md`](FINDINGS.md):
 
-Next: run the same audit on a **partly judge-dependent** benchmark, where the
-trust denominator should drop below 100% and become discriminating.
+- **Finding 01 (GSM8K):** trust denominator 100% (fully exact-checkable) yet 11%
+  of PlatinumBench's subset is semantically defective and deterministic rules
+  recover 0/33 — exact-checkability ⟂ well-posedness. One rule retracted after
+  failing on real data.
+- **Finding 02 (HotpotQA):** the denominator **discriminates** — GSM8K 100% vs
+  HotpotQA **11.6%** exact-checkable (221/250 judge-dependent, because exact-match
+  over free text isn't paraphrase/alias-invariant). The number is about the
+  *grader*, not the questions.
+
+Reproduce: `python scripts/fetch_platinum.py gsm8k && python scripts/fetch_platinum.py hotpotqa && python scripts/report.py`.
+
+Next: a benchmark with an intra-benchmark answer-type mix (DROP) to show the
+denominator splitting *within* one benchmark.

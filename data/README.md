@@ -9,13 +9,16 @@ synthetic — do not cite its numbers as a real benchmark audit.
 ```
 curl -sSL -o data/gsm8k_test.jsonl \
   https://raw.githubusercontent.com/openai/grade-school-math/master/grade_school_math/data/test.jsonl
-python scripts/fetch_gsm8k_platinum.py   # -> data/gsm8k_platinum.jsonl (HF datasets-server, no auth)
-python scripts/report.py                 # trust denominator + validation
+python scripts/fetch_platinum.py gsm8k      # -> data/gsm8k_platinum.jsonl (HF datasets-server, no auth)
+python scripts/fetch_platinum.py hotpotqa   # -> data/hotpotqa_platinum.jsonl (free-text benchmark)
+python scripts/report.py                    # cross-benchmark trust denominator + validation
 ```
 
-Both `.jsonl` files are gitignored (only `fixture.jsonl` is tracked). Confirmed
-working 2026-06-28: GSM8K = 1,319 items; Platinum gsm8k config = 300 items
-(consensus 221 / verified 46 / rejected 32 / revised 1).
+`fetch_platinum.py <config>` works for any platinum-bench config (gsm8k,
+hotpotqa, drop, squad, mmlu_math, ...). All `.jsonl` files are gitignored (only
+`fixture.jsonl` is tracked). Confirmed working 2026-06-29: GSM8K = 1,319; Platinum
+gsm8k = 300 (consensus 221 / verified 46 / rejected 32 / revised 1); Platinum
+hotpotqa = 250 (consensus 48 / verified 45 / rejected 69 / revised 88).
 
 ## Notes on the sources
 

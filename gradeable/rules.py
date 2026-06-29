@@ -172,6 +172,37 @@ def unit_or_rounding_ambiguity(item: BenchmarkItem) -> Optional[RuleResult]:
     return None
 
 
+# --------------------------------------------------------------------------- #
+# EXACT-MATCH-GRADER PROFILE (free-text benchmarks: SQuAD / HotpotQA / DROP spans)
+#
+# These benchmarks grade with string exact-match / token-F1. That grader is
+# SOUND only when the gold answer has a canonical surface form -- a number or a
+# closed label (yes/no/true/false). For any free-text answer (entities, phrases,
+# even single tokens like "albany" or "dutch"), string equality is not invariant
+# to case, articles, morphology, or aliasing, so a correct response can be marked
+# wrong. Such items are JUDGE_DEPENDENT: not because the question is bad, but
+# because the GRADER is unsound for that answer type. This is the soundly
+# decidable part -- "exact match is unsound for free text" is a true statement
+# about string equality, scoped to the benchmark's actual grader.
+# --------------------------------------------------------------------------- #
+
+_CLOSED_LABELS = {"yes", "no", "true", "false"}
+
+
+def free_text_answer_needs_judge(item: BenchmarkItem) -> Optional[RuleResult]:
+    """JUDGE_DEPENDENT unless the gold answer is exact-matchable (a clean number
+    or a closed label). Conservative: a single-token entity ("albany", "u2") is
+    still flagged, because exact match is not alias/case/morphology-invariant."""
+    ans = _final_answer(item).strip()
+    if ans.lower() in _CLOSED_LABELS or _CLEAN_NUMBER.match(ans):
+        return None
+    return RuleResult(
+        verdict=Verdict.JUDGE_DEPENDENT,
+        reason="free-text answer under exact-match grading is not paraphrase/alias-invariant; correct grading needs semantic judgment",
+        rule="free_text_answer_needs_judge",
+    )
+
+
 # Order matters only for which reason is reported first; the verdict is the
 # strongest (most restrictive) one that fires. Register every rule here.
 REGISTRY: list[Rule] = [
@@ -181,3 +212,8 @@ REGISTRY: list[Rule] = [
     internal_contradiction,
     unit_or_rounding_ambiguity,
 ]
+
+# A benchmark's rule set depends on its GRADER -- pick the matching profile.
+# REGISTRY stays the default so v0.1 (GSM8K) behavior is unchanged.
+NUMERIC_PROFILE: list[Rule] = REGISTRY                      # numeric-equality grader (GSM8K)
+EXACT_MATCH_PROFILE: list[Rule] = [free_text_answer_needs_judge, internal_contradiction]  # EM/F1 grader
