@@ -110,8 +110,8 @@ tool.
 
 ## Caveats
 
-- The 250 is PlatinumBench's **curated** HotpotQA subset (model-disagreement-
-  enriched), not uniform HotpotQA; the 63% is that subset's rate.
+- The 250 is PlatinumBench's **curated**, manually-reviewed HotpotQA subset, not
+  uniform HotpotQA; the 63% is that subset's rate.
 - The denominator is scoped to the benchmark's *actual* grader (EM/F1). A
   benchmark that shipped an alias set or a judge would score differently — which
   is exactly the point: the number is about the grader, not the questions.
@@ -156,8 +156,8 @@ mix are not reliable — I should stop quoting tight ranges I can't ground.
 
 ## Caveats
 
-- Same as Findings 01–02: PlatinumBench **curated** subsets (model-disagreement-
-  enriched), scoped to the benchmark's actual grader.
+- Same as Findings 01–02: PlatinumBench **curated**, manually-reviewed subsets
+  (not full benchmarks), scoped to the benchmark's actual grader.
 - DROP **date** answers are a known soft spot of the simple rule: a bare-year date
   (`1944`) reads as a number → exact-checkable, while `March 1944` reads as
   multi-token → judge-dependent. Defensible (raw EM *is* brittle on the latter),

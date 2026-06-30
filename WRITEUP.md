@@ -77,8 +77,8 @@ punctuation), not bare string equality. Doesn't that recover most of the 88%?
 No — because **F1 and normalization fail the soundness definition too**, in *both*
 directions, on free-text answers:
 
-- **False negatives.** Gold `John F. Kennedy`, response `John Fitzgerald Kennedy`:
-  correct, but token-F1 overlap is low and EM is 0. Marked wrong.
+- **False negatives.** Gold `JFK`, response `John F. Kennedy`: correct, but the
+  two strings share no tokens at all — EM is 0 **and** token-F1 is 0. Marked wrong.
 - **False positives.** Gold `George Washington Carver`, response `George
   Washington`: wrong person, but high token-F1 overlap. Marked (partly) right.
 - **Normalization** fixes case, articles, and punctuation. It does **nothing** for
@@ -128,9 +128,10 @@ This is a reproduction plus a tool, not a discovery.
 
 ## Honest limits
 
-- **Curated subsets.** The PlatinumBench slices are model-disagreement-enriched,
-  not uniform samples. The denominators are computed over those slices (and the
-  full GSM8K test split); they are not population estimates of each benchmark.
+- **Curated subsets.** The PlatinumBench slices are manually-reviewed subsets of a
+  few hundred items each, not the full benchmarks. The denominators are computed
+  over those slices (and the full GSM8K test split); they are not population
+  estimates of each benchmark.
 - **Dates.** DROP's "exact-checkable" fraction partly tracks date *formatting*: a
   bare year (`1944`) reads as a number and counts as checkable, while `March 1944`
   reads as multi-token and counts as judge-dependent. Defensible (raw matching is

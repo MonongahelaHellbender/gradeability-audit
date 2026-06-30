@@ -18,7 +18,8 @@ python scripts/report.py                    # cross-benchmark trust denominator 
 hotpotqa, drop, squad, mmlu_math, ...). All `.jsonl` files are gitignored (only
 `fixture.jsonl` is tracked). Confirmed working 2026-06-29: GSM8K = 1,319; Platinum
 gsm8k = 300 (consensus 221 / verified 46 / rejected 32 / revised 1); Platinum
-hotpotqa = 250 (consensus 48 / verified 45 / rejected 69 / revised 88).
+hotpotqa = 250 (consensus 48 / verified 45 / rejected 69 / revised 88); Platinum
+drop = 250 (consensus 27 / verified 3 / rejected 41 / revised 179).
 
 ## Notes on the sources
 
