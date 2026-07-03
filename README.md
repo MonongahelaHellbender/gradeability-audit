@@ -110,3 +110,7 @@ TRUST DENOMINATOR — spectrum
 Reproduce: `python scripts/fetch_platinum.py gsm8k && python scripts/fetch_platinum.py hotpotqa && python scripts/fetch_platinum.py drop && python scripts/report.py`.
 
 Next: **write up the spectrum** (it's the deliverable) — not another benchmark.
+
+---
+
+*Part of a portfolio of refusal-first AI-assurance & verification tools — [github.com/MonongahelaHellbender](https://github.com/MonongahelaHellbender). Related: [rag-triad](https://github.com/MonongahelaHellbender/rag-triad) · [honesty-atlas](https://github.com/MonongahelaHellbender/honesty-atlas) · [assurance-compiler](https://github.com/MonongahelaHellbender/assurance-compiler) · [gradeability-audit](https://github.com/MonongahelaHellbender/gradeability-audit) · [oracle-shield](https://github.com/MonongahelaHellbender/oracle-shield) · [rag-assurance](https://github.com/MonongahelaHellbender/rag-assurance).*
