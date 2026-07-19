@@ -43,6 +43,26 @@ discoveries:
 - gameability — length-controlled AlpacaEval; "One Token to Fool LLM-as-a-Judge"
 - whole-benchmark meta-audit — BetterBench (arXiv 2411.12990)
 
+**And the trust denominator itself is not new — it is standard practice in five other fields,
+where reporting it is mandatory rather than optional:**
+
+- **AAPOR Standard Definitions** (1998–) — response rates computed over *defined dispositions*,
+  with every non-response classified by mechanism before any rate is reported. RR1 is a trust
+  denominator.
+- **NHS Diabetic Eye Screening Programme** — the *ungradable* rate is reported alongside screening
+  results as a first-class quality measure.
+- **ISO 26262** — *diagnostic coverage*: the fraction of faults a safety mechanism can actually
+  detect, stated explicitly rather than assumed complete.
+- **ETS e-rater advisory flags** — essays the automated scorer declines to score, surfaced rather
+  than silently scored.
+- **STARD** (diagnostic accuracy reporting) — *indeterminate* results reported separately from
+  positives and negatives.
+- **Chow (1970)** — the reject option and the error-versus-coverage tradeoff.
+- **bpref** (Buckley & Voorhees) — IR evaluation designed to be robust to incomplete judgments.
+
+The ML-specific novelty is therefore narrow: applying an established reporting discipline to LLM
+benchmarks, where it is currently absent.
+
 **The contribution is two things those don't provide:**
 
 1. A **deterministic, annotation-free** gradeability classifier. Existing audits
